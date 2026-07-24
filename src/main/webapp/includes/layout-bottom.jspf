@@ -89,7 +89,7 @@
 <div class="toast" id="sw-toast"></div>
 
 <script data-shell="1">window.APP_CONTEXT = '<%= request.getContextPath() %>';</script>
-<script data-shell="1" src="<%= request.getContextPath() %>/assets/js/app.js?v=20260619e"></script>
+<script data-shell="1" src="<%= request.getContextPath() %>/assets/js/app.js?v=20260724b"></script>
 <script data-shell="1">
 // Global search (calls SongServlet API)
 async function handleGlobalSearch(val) {

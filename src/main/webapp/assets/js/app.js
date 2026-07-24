@@ -163,6 +163,21 @@ const App = (() => {
        });
   }
 
+  // Thêm bài vào CUỐI hàng chờ hiện tại (không tạo hàng chờ mới, không ngắt bài đang phát).
+  function addToQueue(songId) {
+    API.postForm('/api/player/add', { songId })
+       .then(res => {
+         if (!res || res._failed) { showToast('⚠ Could not add'); return; }
+         showToast(res.alreadyInQueue ? '✓ Already in queue' : '➕ Added to queue');
+         // Nếu trước đó chưa phát gì, bài vừa thêm trở thành bài hiện tại (KHÔNG tự phát).
+         if (!state.currentTrack && res.track) {
+           applyTrack(res.track, res.waitList, false);
+         } else if (res.waitList) {
+           _setWaitList(res.waitList);
+         }
+       });
+  }
+
   function stopPlayback() {
     state.isPlaying = false;
     audio.pause();
@@ -700,6 +715,10 @@ const App = (() => {
       </div>
       <div class="track-actions">
         <span class="track-dur">${t.durationStr || ''}</span>
+        <button class="add-queue-btn" title="Add to current queue"
+                onclick="event.stopPropagation(); App.addToQueue(${t.songId})">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
       </div>
     </div>`;
   }
@@ -788,7 +807,7 @@ async function fillMissingCovers() {
   return {
     init, state, API, Router,
     playTrack, applyTrack, togglePlay, stopPlayback, nextTrack, prevTrack,
-    shuffle, toggleLoop, seekTo, setVolume,
+    shuffle, toggleLoop, seekTo, setVolume, addToQueue,
     showToast, confirm: appConfirm, prompt: appPrompt,
     getState: () => state,
     renderTrackItem,

@@ -38,6 +38,20 @@ public class AudioPlayEngine {
         return playlist;
     }
 
+    /**
+     * Thêm một bài vào CUỐI hàng chờ hiện tại (không tạo hàng chờ mới, không ngắt
+     * bài đang phát). append() tự chống trùng theo songId. Nếu hàng chờ đang rỗng
+     * (chưa phát gì) thì đặt con trỏ vào bài vừa thêm để nó thành bài hiện tại.
+     */
+    public Song addToQueue(Song song) {
+        if (song == null) return getCurrentSong();
+        playlist.append(song);
+        if (currentTrackPointer == null) {
+            currentTrackPointer = playlist.getHead();
+        }
+        return getCurrentSong();
+    }
+
     public void playFromSong(Song song) {
         if (song == null) return;
         Node node = playlist.getNodeById(song.getSongId());

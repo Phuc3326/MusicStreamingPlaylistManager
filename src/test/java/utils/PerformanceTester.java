@@ -28,7 +28,6 @@ public class PerformanceTester {
 
         // 2. Khởi tạo engine tìm kiếm với mảng ĐÃ SẮP XẾP chuẩn BST
         SongSearchEngine searchEngine = new SongSearchEngine(sortedLibrary);
-        testBinarySearchExact(searchEngine, sortedLibrary);
         testSearchByTitleContains(searchEngine);
 
         // 3. Kiểm thử các cấu trúc dữ liệu lưu trữ
@@ -57,19 +56,6 @@ public class PerformanceTester {
         long durationMs = (endTime - startTime) / 1_000_000;
         System.out.println(" -> Sorting " + library.size() + " songs took: " + durationMs + " ms");
         return sorted; // Trả về mảng đã sắp xếp để các hàm sau sử dụng
-    }
-
-    private static void testBinarySearchExact(SongSearchEngine searchEngine, DynamicArrayList library) {
-        System.out.println("\n[2] Binary Search Algorithm - Exact Search (Theoretical complexity: O(log N))");
-        // Lấy bài hát ở giữa mảng đã sắp xếp để test
-        Song target = library.get(NUM_SONGS / 2);
-
-        long startTime = System.nanoTime();
-        Song found = searchEngine.binarySearchExactTitle(target.getTitle());
-        long endTime = System.nanoTime();
-        long durationNs = (endTime - startTime);
-        System.out.println(" -> Searching for song '" + target.getTitle() + "' took: " + durationNs + " ns");
-        System.out.println(" -> Result status: " + (found != null ? "SUCCESS (Found)" : "FAILED"));
     }
 
     private static void testSearchByTitleContains(SongSearchEngine searchEngine) {

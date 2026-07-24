@@ -26,6 +26,7 @@ import utils.JsonHelper;
     "/api/player/shuffle",
     "/api/player/loop",
     "/api/player/waitlist",
+    "/api/player/add",
     "/api/player/remove",
     "/api/player/reorder",
     "/api/player/jump",
@@ -137,6 +138,8 @@ public class PlayerServlet extends HttpServlet {
                 JsonObject root = new JsonObject();
                 root.addProperty("success", true);
                 out.print(root.toString());
+            } else if ("/api/player/add".equals(path)) {
+                handleAdd(request, session, out);
             } else if ("/api/player/remove".equals(path)) {
                 handleRemove(request, session, out);
             } else if ("/api/player/reorder".equals(path)) {
@@ -235,6 +238,30 @@ public class PlayerServlet extends HttpServlet {
     private boolean isLoggedIn(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         return session != null && session.getAttribute("user") != null;
+    }
+
+    /**
+     * Thêm một bài vào CUỐI hàng chờ hiện tại (không tạo hàng chờ mới).
+     * Nếu chưa có phiên phát thì tạo engine rỗng rồi thêm bài vào.
+     */
+    private void handleAdd(HttpServletRequest request, HttpSession session, PrintWriter out)
+            throws Exception {
+        int songId = Integer.parseInt(request.getParameter("songId"));
+        Song song = findSongInLibrary(songId);
+        AudioPlayEngine engine = getOrCreateEngine(session);
+
+        boolean alreadyInQueue = engine.getPlaylist().contains(songId);
+        Song current = engine.addToQueue(song);
+        syncWaitingList(session, engine);
+
+        JsonObject root = new JsonObject();
+        root.addProperty("success", song != null);
+        root.addProperty("alreadyInQueue", alreadyInQueue);
+        if (current != null) {
+            root.add("track", JsonHelper.songToJson(current));
+        }
+        root.add("waitList", JsonHelper.waitListToJson(engine.getPlaylist()));
+        out.print(root.toString());
     }
 
     private void handleRemove(HttpServletRequest request, HttpSession session, PrintWriter out)

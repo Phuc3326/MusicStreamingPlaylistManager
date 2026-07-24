@@ -39,33 +39,6 @@ public class SongSearchEngine {
         return results;
     }
 
-    public Song binarySearchExactTitle(String title) {
-        if (title == null || title.trim().isEmpty()) {
-            return null;
-        }
-
-        String target = title.trim();
-        int lo = 0;
-        int hi = sortedLibrary.size() - 1;
-
-        while (lo <= hi) {
-            int mid = lo + (hi - lo) / 2;
-            Song song = sortedLibrary.get(mid);
-            int cmp = song.getTitle().compareToIgnoreCase(target);
-
-            if (cmp == 0) {
-                return song;
-            }
-            if (cmp < 0) {
-                lo = mid + 1;
-            } else {
-                hi = mid - 1;
-            }
-        }
-
-        return null;
-    }
-
     public DynamicArrayList filterByGenre(String genre) {
         DynamicArrayList results = new DynamicArrayList();
         if (genre == null || genre.trim().isEmpty()) {
