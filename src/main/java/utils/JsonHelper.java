@@ -18,6 +18,14 @@ public class JsonHelper {
         obj.addProperty("filePath", s.getFilePath());
         obj.addProperty("coverPath", s.getCoverPath());
 
+        if (s.getUploadedBy() != null) {
+            obj.addProperty("uploadedBy", s.getUploadedBy());
+        }
+        if (s.getUploaderName() != null) {
+            obj.addProperty("uploaderName", s.getUploaderName());
+        }
+        obj.addProperty("status", s.getStatus() != null ? s.getStatus() : "APPROVED");
+
         int min = s.getDuration() / 60;
         int sec = s.getDuration() % 60;
         obj.addProperty("durationStr", min + ":" + (sec < 10 ? "0" + sec : sec));

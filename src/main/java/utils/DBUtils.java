@@ -1,90 +1,95 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package utils;
 
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
- * Lớp tiện ích hỗ trợ kết nối đến cơ sở dữ liệu PostgreSQL cục bộ (Local)
- * 
- * @author huynh
+ * Tiện ích quản lý kết nối PostgreSQL cho SoundWave.
+ * Tối ưu hóa chuyên biệt cho môi trường Docker Compose.
+ *
+ * Mặc định tự động kết nối:
+ * - Trong Docker container: host 'music-db', port 5432, db 'music_db'
+ * - Chạy ngoài máy local: host 'localhost', port 5436 (map từ docker compose)
  */
 public class DBUtils {
 
-    // ==========================================
-    // CẤU HÌNH KẾT NỐI SUPABASE (ONLINE)
-    // ==========================================
-    // Bạn lấy thông tin này trên Supabase: Project Settings -> Database ->
-    // Connection string -> JDBC
-    // Lưu ý: Đổi URL, USER, PASSWORD theo đúng project của bạn
-    private static final String HOST = "aws-0-ap-southeast-1.pooler.supabase.com"; // Thay bằng Host của bạn (thường có
-                                                                                   // chữ
-    // pooler)
-    private static final String PORT = "6543"; // Dùng cổng 6543 để hỗ trợ IPv4 (Connection Pooling)
-    private static final String DBNAME = "postgres"; // Mặc định của Supabase luôn là postgres
-    private static final String USER = "postgres.wdqxtunkwlnumpsisgwp"; // Thay bằng User của bạn
-    private static final String PASSWORD = "EydcO1xYCmIUQSD2"; // Mật khẩu lúc bạn tạo project Supabase
+    // Cấu hình mặc định khớp 100% với docker-compose.yml
+    private static final String DEFAULT_HOST = "localhost";
+    private static final String DEFAULT_PORT = "5436"; // Port map ngoài của soundwave-postgres
+    private static final String DEFAULT_DB = "music_db";
+    private static final String DEFAULT_USER = "music_user";
+    private static final String DEFAULT_PASS = "MusicSecret2026!";
 
-    // Chuỗi kết nối JDBC cho Supabase
-    // Cần thêm ?sslmode=require vì Supabase yêu cầu mã hóa SSL
-    // Trong JDBC, chuỗi URL bắt buộc phải bắt đầu bằng "jdbc:postgresql://"
-    // Supabase (khi dùng qua pooler) yêu cầu thêm prepareThreshold=0
-    private static final String URL = "jdbc:postgresql://" + HOST + ":" + PORT + "/" + DBNAME
-            + "?sslmode=require&prepareThreshold=0";
-
-    // ==========================================
-    // CẤU HÌNH KẾT NỐI POSTGRESQL LOCAL (OFFLINE)
-    // (Bôi đen Ctrl + / để mở khóa khi cần dùng lại Local)
-    // ==========================================
-    // private static final String HOST = "localhost";
-    // private static final String PORT = "5432";
-    // private static final String DBNAME = "music_streaming_db";
-    // private static final String USER = "postgres";
-    // private static final String PASSWORD = "123";
-    // private static final String URL = "jdbc:postgresql://" + HOST + ":" + PORT +
-    // "/" + DBNAME;
-
-    /**
-     * Mở kết nối tới Database Local
-     * 
-     * @return Connection object
-     * @throws ClassNotFoundException Nếu không tìm thấy Driver
-     * @throws SQLException           Nếu thông tin kết nối sai hoặc server chưa bật
-     */
-    public static Connection getConnection() throws ClassNotFoundException, SQLException {
-        // Load Driver của PostgreSQL vào bộ nhớ
-        Class.forName("org.postgresql.Driver");
-
-        // Thực hiện và trả về kết nối
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+    static {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("FATAL: Không tìm thấy PostgreSQL JDBC Driver!");
+        }
     }
 
-    /**
-     * Hàm test nhanh kết nối (Run file này trực tiếp (Shift + F6) trong NetBeans để
-     * kiểm tra)
-     */
-    public static void main(String[] args) {
-        try {
-            System.out.println("Dang ket noi toi PostgreSQL Local (DB: music_streaming_db)...");
-            Connection conn = DBUtils.getConnection();
+    public static Connection getConnection() throws SQLException {
+        // 1. Ưu tiên biến DB_URL được truyền trực tiếp từ docker-compose.yml
+        String dbUrl = System.getenv("DB_URL");
+        String dbUser = System.getenv("DB_USER");
+        String dbPass = System.getenv("DB_PASS");
 
-            if (conn != null) {
-                System.out.println("Ket noi PostgreSQL Local thanh cong!");
-                // Đóng kết nối sau khi test xong
-                conn.close();
+        if (dbUrl != null && !dbUrl.trim().isEmpty()) {
+            String user = (dbUser != null) ? dbUser : DEFAULT_USER;
+            String pass = (dbPass != null) ? dbPass : DEFAULT_PASS;
+            return DriverManager.getConnection(dbUrl, user, pass);
+        }
+
+        // 2. Định dạng DATABASE_URL (nếu chạy cloud PaaS)
+        String databaseUrl = System.getenv("DATABASE_URL");
+        if (databaseUrl != null && !databaseUrl.trim().isEmpty()) {
+            return getConnectionFromDatabaseUrl(databaseUrl.trim());
+        }
+
+        // 3. Fallback cấu hình linh hoạt hoặc mặc định máy local test cổng 5436
+        String host = System.getenv("DB_HOST");
+        String port = System.getenv("DB_PORT");
+        String dbName = System.getenv("DB_NAME");
+
+        host = (host != null && !host.trim().isEmpty()) ? host : DEFAULT_HOST;
+        port = (port != null && !port.trim().isEmpty()) ? port : DEFAULT_PORT;
+        dbName = (dbName != null && !dbName.trim().isEmpty()) ? dbName : DEFAULT_DB;
+        String user = (dbUser != null && !dbUser.trim().isEmpty()) ? dbUser : DEFAULT_USER;
+        String pass = (dbPass != null && !dbPass.trim().isEmpty()) ? dbPass : DEFAULT_PASS;
+
+        String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + dbName;
+        return DriverManager.getConnection(jdbcUrl, user, pass);
+    }
+
+    private static Connection getConnectionFromDatabaseUrl(String rawUrl) throws SQLException {
+        try {
+            URI uri = new URI(rawUrl);
+            String userInfo = uri.getUserInfo();
+            String user = "";
+            String pass = "";
+            if (userInfo != null && userInfo.contains(":")) {
+                String[] parts = userInfo.split(":", 2);
+                user = parts[0];
+                pass = parts[1];
             }
-        } catch (ClassNotFoundException e) {
-            System.err.println("Loi: Khong tim thay JDBC Driver cua PostgreSQL.");
-            System.err.println("Hay chac chan ban da add file postgresql-x.x.x.jar vao thu muc Libraries cua project!");
-        } catch (SQLException e) {
-            System.err.println("Loi ket noi Database Local: " + e.getMessage());
-            System.err.println(
-                    "Meo: Hay chac chan ban da chay file init.sql de tao database 'music_streaming_db' truoc nhe.");
-            e.printStackTrace();
+
+            int port = uri.getPort();
+            if (port <= 0) port = 5432;
+
+            String path = uri.getPath();
+            String dbName = (path != null && path.length() > 1) ? path.substring(1) : DEFAULT_DB;
+            String query = uri.getQuery();
+
+            String jdbcUrl = "jdbc:postgresql://" + uri.getHost() + ":" + port + "/" + dbName;
+            if (query != null && !query.isEmpty()) {
+                jdbcUrl += "?" + query;
+            }
+
+            return DriverManager.getConnection(jdbcUrl, user, pass);
+        } catch (Exception e) {
+            return DriverManager.getConnection(rawUrl);
         }
     }
 }

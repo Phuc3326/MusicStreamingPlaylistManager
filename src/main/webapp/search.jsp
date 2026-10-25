@@ -56,14 +56,32 @@
       <div id="browseSection">
         <p style="font-size:1rem; font-weight:600; margin-bottom:1rem; color:var(--text2)">Browse all</p>
         <div class="genre-grid">
-          <div class="genre-card" style="background:#2a1015;color:#fda4af" onclick="filterGenre('ballad')">
+          <div class="genre-card" style="background:#1a001a;color:#fca5a5" onclick="filterGenre('Pop')">
+            <span class="g-icon">🎶</span><span class="g-name">Pop</span>
+          </div>
+          <div class="genre-card" style="background:#2a1015;color:#fda4af" onclick="filterGenre('Ballad')">
             <span class="g-icon">🎵</span><span class="g-name">Ballad</span>
           </div>
-          <div class="genre-card" style="background:#2e1025;color:#f472b6" onclick="filterGenre('barbie playlist')">
-            <span class="g-icon">👸</span><span class="g-name">Barbie</span>
+          <div class="genre-card" style="background:#1e102a;color:#c084fc" onclick="filterGenre('R&B')">
+            <span class="g-icon">🎷</span><span class="g-name">R&B</span>
           </div>
-          <div class="genre-card" style="background:#1a001a;color:#fca5a5" onclick="filterGenre('pop')">
-            <span class="g-icon">🎶</span><span class="g-name">Pop</span>
+          <div class="genre-card" style="background:#261805;color:#fbbf24" onclick="filterGenre('Hip Hop')">
+            <span class="g-icon">🎤</span><span class="g-name">Hip Hop</span>
+          </div>
+          <div class="genre-card" style="background:#2d0a0a;color:#f87171" onclick="filterGenre('Rock')">
+            <span class="g-icon">🎸</span><span class="g-name">Rock</span>
+          </div>
+          <div class="genre-card" style="background:#0c2333;color:#38bdf8" onclick="filterGenre('Electronic / EDM')">
+            <span class="g-icon">⚡</span><span class="g-name">Electronic / EDM</span>
+          </div>
+          <div class="genre-card" style="background:#06281e;color:#34d399" onclick="filterGenre('Acoustic')">
+            <span class="g-icon">🪕</span><span class="g-name">Acoustic</span>
+          </div>
+          <div class="genre-card" style="background:#160d2b;color:#a78bfa" onclick="filterGenre('Lo-Fi / Chill')">
+            <span class="g-icon">☕</span><span class="g-name">Lo-Fi / Chill</span>
+          </div>
+          <div class="genre-card" style="background:#2e1025;color:#f472b6" onclick="filterGenre('Barbie Playlist')">
+            <span class="g-icon">👸</span><span class="g-name">Barbie</span>
           </div>
         </div>
       </div>
