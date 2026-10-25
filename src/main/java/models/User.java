@@ -6,15 +6,22 @@ public class User {
     private int userId;
     private String username;
     private String password;
+    private String role; // "ADMIN" hoặc "USER"
     private Timestamp createdAt;
 
     public User() {
+        this.role = "USER";
     }
 
     public User(int userId, String username, String password, Timestamp createdAt) {
+        this(userId, username, password, "USER", createdAt);
+    }
+
+    public User(int userId, String username, String password, String role, Timestamp createdAt) {
         this.userId = userId;
         this.username = username;
         this.password = password;
+        this.role = (role != null && !role.trim().isEmpty()) ? role.toUpperCase() : "USER";
         this.createdAt = createdAt;
     }
 
@@ -40,6 +47,18 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = (role != null) ? role.toUpperCase() : "USER";
+    }
+
+    public boolean isAdmin() {
+        return "ADMIN".equalsIgnoreCase(this.role);
     }
 
     public Timestamp getCreatedAt() {

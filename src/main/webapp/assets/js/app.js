@@ -121,6 +121,7 @@ const App = (() => {
 
   function _audioSrc(track) {
     if (!track || !track.filePath) return '';
+    if (track.filePath.startsWith('http://') || track.filePath.startsWith('https://')) return track.filePath;
     return resolveContextPath() + track.filePath;
   }
 
@@ -128,7 +129,7 @@ const App = (() => {
     const src = _audioSrc(track);
     if (!src) return;
 
-    const needsReload = !audio.src || !audio.src.endsWith(track.filePath);
+    const needsReload = !audio.src || (audio.src !== src && !audio.src.endsWith(track.filePath));
     audio.volume = state.volume / 100;
 
     if (needsReload) {
@@ -1029,6 +1030,8 @@ async function fillMissingCovers() {
     fillMissingCovers,
   };
 })();
+
+window.App = App;
 
 // Global alias for inline scripts in JSP pages
 function renderTrackItem(t, num) {

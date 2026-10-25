@@ -24,14 +24,20 @@ public class SongSearchEngine {
 
         for (int i = start; i < sortedLibrary.size(); i++) {
             Song song = sortedLibrary.get(i);
-            if (song.getTitle().toLowerCase().contains(kw)) {
+            String title = song.getTitle() != null ? song.getTitle().toLowerCase() : "";
+            String artist = song.getArtist() != null ? song.getArtist().toLowerCase() : "";
+            String genre = song.getGenre() != null ? song.getGenre().toLowerCase() : "";
+            if (title.contains(kw) || artist.contains(kw) || genre.contains(kw)) {
                 results.add(song);
             }
         }
 
         for (int i = 0; i < start; i++) {
             Song song = sortedLibrary.get(i);
-            if (song.getTitle().toLowerCase().contains(kw)) {
+            String title = song.getTitle() != null ? song.getTitle().toLowerCase() : "";
+            String artist = song.getArtist() != null ? song.getArtist().toLowerCase() : "";
+            String genre = song.getGenre() != null ? song.getGenre().toLowerCase() : "";
+            if (title.contains(kw) || artist.contains(kw) || genre.contains(kw)) {
                 results.add(song);
             }
         }
@@ -75,7 +81,8 @@ public class SongSearchEngine {
         String target = genre.trim().toLowerCase();
         for (int i = 0; i < sortedLibrary.size(); i++) {
             Song song = sortedLibrary.get(i);
-            if (song.getGenre().equalsIgnoreCase(target)) {
+            String sg = song.getGenre() != null ? song.getGenre().trim().toLowerCase() : "";
+            if (sg.equals(target) || sg.contains(target) || target.contains(sg)) {
                 results.add(song);
             }
         }

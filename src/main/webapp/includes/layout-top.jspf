@@ -2,18 +2,26 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
   // Sử dụng biến có tiền tố 'top' để tránh trùng với file JSP cha
-  if (session.getAttribute("user") == null) {
+  models.User topUser = (models.User) session.getAttribute("user");
+  if (topUser == null) {
     response.sendRedirect(request.getContextPath() + "/login.jsp");
     return;
   }
   
-  String topUsername = (String) session.getAttribute("username");
+  String topUsername = topUser.getUsername();
   String topInitials = (topUsername != null && topUsername.length() >= 2)
     ? topUsername.substring(0, 2).toUpperCase() : "SW";
     
   // Lấy currentPage an toàn từ request
   String topCurrentPage = (String) request.getAttribute("currentPage");
   if (topCurrentPage == null) topCurrentPage = "";
+
+  boolean topIsAdmin = topUser.isAdmin();
+  int topPendingCount = 0;
+  if (topIsAdmin) {
+    models.SongDAO topSongDAO = new models.SongDAO();
+    topPendingCount = topSongDAO.countPendingSongs();
+  }
 %>
 
 <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
@@ -31,11 +39,17 @@
   <symbol id="ic-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></symbol>
   <symbol id="ic-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
   <symbol id="ic-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="ic-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+  <symbol id="ic-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+  <symbol id="ic-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="ic-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
 </svg>
 
 <div id="app">
   <nav id="sidebar">
     <div class="logo">SoundWave</div>
+    
     <div class="nav-section">
       <p class="nav-label">Explore</p>
       <a class="nav-item <%= "home".equals(topCurrentPage) ? "active" : "" %>" data-page="home" href="<%= request.getContextPath() %>/home.jsp">
@@ -45,6 +59,7 @@
         <svg><use href="#ic-search"/></svg> Search
       </a>
     </div>
+
     <div class="nav-section">
       <p class="nav-label">My Library</p>
       <a class="nav-item <%= "playlist".equals(topCurrentPage) ? "active" : "" %>" data-page="playlist" href="<%= request.getContextPath() %>/playlist.jsp">
@@ -53,7 +68,30 @@
       <a class="nav-item <%= "nowplaying".equals(topCurrentPage) ? "active" : "" %>" data-page="nowplaying" href="<%= request.getContextPath() %>/nowplaying.jsp">
         <svg><use href="#ic-play"/></svg> Now Playing
       </a>
+      <a class="nav-item <%= "my-uploads".equals(topCurrentPage) ? "active" : "" %>" data-page="my-uploads" href="<%= request.getContextPath() %>/my-uploads">
+        <svg><use href="#ic-music"/></svg> My Uploads
+      </a>
+      <a class="nav-item <%= "upload".equals(topCurrentPage) ? "active" : "" %>" data-page="upload" href="<%= request.getContextPath() %>/upload.jsp">
+        <svg><use href="#ic-upload"/></svg> Upload Song
+      </a>
     </div>
+
+    <% if (topIsAdmin) { %>
+    <div class="nav-section">
+      <p class="nav-label">Administration</p>
+      <a class="nav-item <%= "moderation".equals(topCurrentPage) ? "active" : "" %>" data-page="moderation" href="<%= request.getContextPath() %>/moderation" style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="display:flex; align-items:center; gap:0.75rem;">
+          <svg><use href="#ic-shield"/></svg> Moderation
+        </span>
+        <% if (topPendingCount > 0) { %>
+          <span style="background:#e11d48; color:#fff; font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:999px;">
+            <%= topPendingCount %>
+          </span>
+        <% } %>
+      </a>
+    </div>
+    <% } %>
+
     <div class="sidebar-bottom">
       <a class="nav-item" href="<%= request.getContextPath() %>/AuthServlet?action=logout">
         <svg><use href="#ic-logout"/></svg> Log out
@@ -70,6 +108,9 @@
         </div>
       </div>
       <div class="topbar-right">
+        <% if (topIsAdmin) { %>
+          <span style="background:rgba(124,58,237,0.25); color:#a78bfa; border:1px solid rgba(167,139,250,0.4); padding:3px 9px; border-radius:6px; font-size:0.75rem; font-weight:800; letter-spacing:0.5px; margin-right:0.5rem;">ADMIN</span>
+        <% } %>
         <a class="user-btn" data-page="profile" href="<%= request.getContextPath() %>/profile.jsp"><%= topInitials %></a>
       </div>
     </div>

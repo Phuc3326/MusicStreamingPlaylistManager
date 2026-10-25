@@ -1,0 +1,54 @@
+services:
+  # ==========================================
+  # 1. Cơ sở dữ liệu PostgreSQL cho SoundWave
+  # ==========================================
+  music-db:
+    image: postgres:16-alpine
+    container_name: soundwave-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-music_db}
+      POSTGRES_USER: ${DB_USER:-music_user}
+      POSTGRES_PASSWORD: ${DB_PASS:-MusicSecret2026!}
+    ports:
+      # Port 5436 bên ngoài để không trùng với 5432 (local) và 5435 (vnote)
+      - "5436:5432"
+    volumes:
+      - music_pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-music_user} -d ${POSTGRES_DB:-music_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # 2. Ứng dụng Web Java Tomcat SoundWave
+  # ==========================================
+  music-app:
+    build: .
+    container_name: soundwave-webapp
+    restart: always
+    depends_on:
+      music-db:
+        condition: service_healthy
+    ports:
+      # Cổng 8081 để Nginx Reverse Proxy điều hướng music.hufudev.me vào đây
+      - "8081:8080"
+    environment:
+      DB_URL: jdbc:postgresql://music-db:5432/${POSTGRES_DB:-music_db}
+      DB_USER: ${DB_USER:-music_user}
+      DB_PASS: ${DB_PASS:-MusicSecret2026!}
+      CLOUDINARY_URL: ${CLOUDINARY_URL}
+      UPLOAD_DIR: /usr/local/tomcat/uploads
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-AdminSecret2026!}
+    volumes:
+      - music_uploads:/usr/local/tomcat/uploads
+
+# ==========================================
+# Ổ cứng độc lập (Named Volume) lưu trữ Data
+# ==========================================
+volumes:
+  music_pgdata:
+  music_uploads:
