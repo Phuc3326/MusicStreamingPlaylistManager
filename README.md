@@ -94,3 +94,12 @@ MusicStreamingPlaylistManager/
 ├── .env.example                     # Environment configuration template
 └── pom.xml                          # Maven dependencies
 ```
+
+---
+
+## Authors and Team
+* Huynh Huu Phuc (Lead Developer / DevOps) — https://github.com/Phuc3326
+* Ho Le Thien An
+* Nguyen Hoang Khoi
+* Pham Tuan Trien
+* Institution: FPT HCM University
