@@ -7,7 +7,7 @@
 [![Cloudinary](https://img.shields.io/badge/Cloudinary-CDN%20Integrated-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)](https://cloudinary.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
-Live Demo: https://soundway.hufudev.me
+Live Demo: https://soundwave.hufudev.me
 
 SoundWave is a full-stack Java web application designed for music streaming, playlist management, and community music sharing with role-based content moderation.
 
